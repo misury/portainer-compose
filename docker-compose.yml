@@ -1,29 +1,14 @@
 version: '2'
 
-services:
-  proxy:
-    build: nginx/
-    container_name: "portainer-proxy"
-    ports:
-      - "80:80"
-    networks:
-      - local
-
-  templates:
-    image: portainer/templates
-    container_name: "portainer-templates"
-    networks:
-      - local
-
   portainer:
     image: portainer/portainer
-    container_name: "portainer-app"
+    container_name: "portainer"
     command: --templates http://templates/templates.json
-    networks:
-      - local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/portainer/data:/data
+    ports:9000
+    restart:always
       
   nzbget:
     image: linuxserver/nzbget
@@ -35,9 +20,6 @@ services:
     ports:
       - 6789:6789
     restart: always
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
       
   plex:
     image: plexinc/pms-docker:plexpass
@@ -52,8 +34,6 @@ services:
     restart: always
     environment:
       - PLEX_CLAIM="<get from https://www.plex.tv/claim/>"
-      - PUID=${PUID}
-      - PGID=${PGID}
       
   plexpy:
     image: linuxserver/plexpy
@@ -68,9 +48,6 @@ services:
     links:
       - plex
     restart: always
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
       
   watchtower:
     image: centurylink/watchtower
