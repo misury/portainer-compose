@@ -24,7 +24,54 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/portainer/data:/data
-
+      
+  nzbget:
+    image: linuxserver/nzbget
+    container_name: nzbget
+    volumes:
+      - /home/plex/nzbget/config:/config
+      - /home/plex/Downloads:/downloads
+      - /home/plex/Downloads/Complete:/downloads/complete
+    ports:
+      - 6789:6789
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      
+  plex:
+    image: plexinc/pms-docker:plexpass
+    container_name: plex
+    volumes:
+      - /home/plex/plex:/config
+      - /home/plex/Downloads/Complete/Movies:/movies
+      - /home/plex/Downloads/Complete/Tvshows:/tvshows
+    network_mode: host
+    ports:
+      - 32400:32400
+    restart: always
+    environment:
+      - PLEX_CLAIM="<get from https://www.plex.tv/claim/>"
+      - PUID=${PUID}
+      - PGID=${PGID}
+      
+  plexpy:
+    image: linuxserver/plexpy
+    container_name: plexpy
+    depends_on:
+      - plex
+    volumes:
+      - /home/plex/plexpy:/config
+      - /home/plex/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
+    ports:
+      - 8181:8181
+    links:
+      - plex
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      
   watchtower:
     image: centurylink/watchtower
     container_name: "portainer-watchtower"
